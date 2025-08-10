@@ -1,26 +1,74 @@
-# Simple Go Network Mapper
 
-A simple and lightweight network mapper written in Go. This tool scans TCP ports on a given host (default ports 1 to 1024) and prints out which ports are open. It is intended for educational purposes.
+markdown
+Copy
+Edit
+# GoNeMap — Lightweight TCP Port Scanner in Go
 
-## Features
+GoNeMap is a **minimalist, high-performance TCP port scanner** written in Go.  
+It follows a lightweight approach while keeping the code **fully extensible** for network professionals, penetration testers, and learners.
 
-- Scans specified TCP ports on a target host.
-- Uses concurrent goroutines to speed up the scanning process.
-- Configurable timeout for each port connection attempt.
+## 🔹 Features
+- Scans the most common TCP ports by default.
+- **Easily extendable** — just add new ports to the `commonPorts` map in the source code.
+- Adjustable connection timeout (in milliseconds).
+- Uses **TCP Connect() scanning** (`net.DialTimeout`) to detect open ports.
+- Minimal dependencies — only standard Go libraries.
 
-## Prerequisites
+## 🔹 How It Works
+GoNeMap uses the **TCP Connect scan** method:
+1. Attempts to establish a TCP connection to each target port.
+2. If the connection is successful → the port is reported as **OPEN**.
+3. If it fails or times out → the port is reported as **closed**.
 
-- [Go](https://golang.org/dl/) installed (version 1.13 or later recommended).
+This is similar in principle to Nmap's `-sT` scan mode, but implemented from scratch.
 
-## Getting Started
+## 🔹 Installation & Usage
 
-1. **Clone the Repository or Download the File**
+### 1. Clone the Repository
+```bash
+git clone https://github.com/eauzun/GoNeMap.git
+cd GoNeMap
+2. Run Without Building
+bash
+Copy
+Edit
+go run main.go -host <target-host> -timeout <ms>
+Example:
 
-   You can clone this repository or simply download the `main.go` file.
+bash
+Copy
+Edit
+go run main.go -host 192.168.1.1 -timeout 500
+3. Build & Run
+bash
+Copy
+Edit
+go build -o gonemap main.go
+./gonemap -host example.com -timeout 300
+🔹 Adding Custom Ports
+All ports to be scanned are stored in the commonPorts map inside main.go:
 
-2. **Build and Run**
+go
+Copy
+Edit
+var commonPorts = map[int]string{
+    21: "FTP",
+    22: "SSH",
+    30: "Telnet-Alt", // Example custom port
+    80: "HTTP",
+    443: "HTTPS",
+}
+Simply add your desired port and service name to this list — the program will automatically include it in the scan.
 
-   Open your terminal, navigate to the directory containing `main.go`, and run:
-
-   ```bash
-   go run main.go <target-host>
+🔹 Example Output
+less
+Copy
+Edit
+Scanning 192.168.1.1
+-------------------------
+[+] Port 22 (SSH): OPEN
+[-] Port 23 (Telnet): closed
+[+] Port 80 (HTTP): OPEN
+Scan Process Completed
+📜 License
+MIT License — feel free to use and modify.

@@ -1,44 +1,75 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"net"
 	"os"
-	"sync"
+	"sort"
 	"time"
 )
 
+//Here is the list of ports to be scanned.
+//If you want to scan an additional port, please add it to the list below.
+var commonPorts = map[int]string{
+	21:   "FTP",
+	22:   "SSH",
+	23:   "Telnet",
+	30:	  "Telnet-Alt",
+	25:   "SMTP",
+	53:   "DNS",
+	80:   "HTTP",
+	110:  "POP3",
+	143:  "IMAP",
+	443:  "HTTPS",
+	465:  "SMTPS",
+	993:  "IMAPS",
+	995:  "POP3S",
+	3306: "MySQL",
+	3389: "RDP",
+	5432: "PostgreSQL",
+	5900: "VNC",
+	6379: "Redis",
+	8080: "HTTP-Alt",
+	8443: "HTTPS-Alt",
+}
 
-func scanPort(host string, port int, timeout time.Duration, wg *sync.WaitGroup) {
-	defer wg.Done()
-	address := fmt.Sprintf("%s:%d", host, port)
-	conn, err := net.DialTimeout("tcp", address, timeout)
+func scanPort(protocol, hostname string, port int, timeout time.Duration) bool {
+	address := fmt.Sprintf("%s:%d", hostname, port)
+	conn, err := net.DialTimeout(protocol, address, timeout)
 	if err != nil {
-		return
+		return false
 	}
 	conn.Close()
-	fmt.Printf("Port %d: Is Open\n", port)
+	return true
 }
 
 func main() {
-	if len(os.Args) < 2 {
-		fmt.Println("Welcome to GoNeMap by eauzun\nUsage: go run main.go <target>")
-		return
+	host := flag.String("host", "", "Target hostname or IP address")
+	timeout := flag.Int("timeout", 500, "Timeout in milliseconds")
+	flag.Parse()
+
+	if *host == "" {
+		fmt.Println("Please provide a host using -host flag.")
+		os.Exit(1)
 	}
 
-	host := os.Args[1]
-	timeout := 500 * time.Millisecond
+	fmt.Println("Scanning", *host)
+	fmt.Println("-------------------------")
 
-	var wg sync.WaitGroup
-
-	fmt.Println("Scanning...")
-
-	for port := 1; port <= 1024; port++ {
-		wg.Add(1)
-		go scanPort(host, port, timeout, &wg)
+	timeoutDuration := time.Duration(*timeout) * time.Millisecond
+	var ports []int
+	for p := range commonPorts {
+		ports = append(ports, p)
 	}
+	sort.Ints(ports)
 
-	wg.Wait()
-
-	fmt.Println("Scan Process Completed")
+	for _, port := range ports {
+		open := scanPort("tcp", *host, port, timeoutDuration)
+		if open {
+			fmt.Printf("[+] Port %d (%s): OPEN\n", port, commonPorts[port])
+		} else {
+			fmt.Printf("[-] Port %d (%s): closed\n", port, commonPorts[port])
+		}
+	}
 }
