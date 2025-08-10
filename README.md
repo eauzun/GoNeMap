@@ -1,7 +1,3 @@
-
-markdown
-Copy
-Edit
 # GoNeMap — Lightweight TCP Port Scanner in Go
 
 GoNeMap is a **minimalist, high-performance TCP port scanner** written in Go.  
@@ -28,29 +24,27 @@ This is similar in principle to Nmap's `-sT` scan mode, but implemented from scr
 ```bash
 git clone https://github.com/eauzun/GoNeMap.git
 cd GoNeMap
-2. Run Without Building
-bash
-Copy
-Edit
-go run main.go -host <target-host> -timeout <ms>
-Example:
+```
 
-bash
-Copy
-Edit
+### 2. Run Without Building
+```bash
+go run main.go -host <target-host> -timeout <ms>
+```
+
+Example:
+```bash
 go run main.go -host 192.168.1.1 -timeout 500
-3. Build & Run
-bash
-Copy
-Edit
+```
+
+### 3. Build & Run
+```bash
 go build -o gonemap main.go
 ./gonemap -host example.com -timeout 300
-🔹 Adding Custom Ports
-All ports to be scanned are stored in the commonPorts map inside main.go:
+```
 
-go
-Copy
-Edit
+## 🔹 Adding Custom Ports
+All ports to be scanned are stored in the `commonPorts` map inside `main.go`:
+```go
 var commonPorts = map[int]string{
     21: "FTP",
     22: "SSH",
@@ -58,17 +52,19 @@ var commonPorts = map[int]string{
     80: "HTTP",
     443: "HTTPS",
 }
+```
 Simply add your desired port and service name to this list — the program will automatically include it in the scan.
 
-🔹 Example Output
-less
-Copy
-Edit
+## 🔹 Example Output
+```
 Scanning 192.168.1.1
 -------------------------
 [+] Port 22 (SSH): OPEN
 [-] Port 23 (Telnet): closed
 [+] Port 80 (HTTP): OPEN
 Scan Process Completed
-📜 License
+```
+
+## 📜 License
 MIT License — feel free to use and modify.
+
